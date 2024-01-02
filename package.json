@@ -13,7 +13,7 @@
 		"test": "pnpm run test:client & pnpm run test:ssr",
 		"test:client": "vitest",
 		"test:ssr": "vitest --mode ssr",
-		"format": "prettier --cache --ignore-path .gitignore -w .",
+		"format": "prettier --cache -w .",
 		"lint": "pnpm run lint:code & pnpm run lint:types",
 		"lint:code": "eslint --ignore-path .gitignore --max-warnings 0 src/**/*.{js,ts,tsx,jsx}",
 		"lint:types": "tsc --noEmit"
