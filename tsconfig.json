@@ -1,0 +1,10 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM"],
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js"
+	},
+	"include": ["src", "test"],
+	"references": [{"path": "./tsconfig.node.json"}]
+}
