@@ -1,8 +1,7 @@
-import "../src/waapi.polyfill.js"
 import {mountedStates} from "@motionone/dom"
-import {children, createRoot, createSignal, Show} from "solid-js"
+import {children, createRoot, createSignal, JSX, Show} from "solid-js"
 import {screen, render} from "@solidjs/testing-library"
-import {Presence, Motion, VariantDefinition} from "../src/index.js"
+import {Presence, Motion, VariantDefinition} from "../src/index.jsx"
 import type {RefProps} from "@solid-primitives/refs"
 
 const TestComponent = (
@@ -12,7 +11,7 @@ const TestComponent = (
 		animate?: VariantDefinition
 		exit?: VariantDefinition
 	} = {},
-) => {
+): JSX.Element => {
 	return (
 		<Presence initial={props.initial ?? true}>
 			<Show when={props.show ?? true}>
@@ -94,7 +93,7 @@ describe("Presence", () => {
 		)
 
 		expect(rendered()).toContain(ref_1)
-		expect(ref_1).toContainElement(ref_2)
+		expect(ref_1.firstChild).toBe(ref_2)
 		expect(ref_1.style.opacity).toBe("")
 		expect(ref_2.style.opacity).toBe("")
 		expect(mountedStates.has(ref_1)).toBeTruthy()
@@ -126,7 +125,7 @@ describe("Presence", () => {
 		let ref_1!: HTMLDivElement, ref_2!: HTMLDivElement
 		let resolve_last: (() => void) | undefined
 
-		const El = (props: RefProps<HTMLDivElement>) => (
+		const El = (props: RefProps<HTMLDivElement>): JSX.Element => (
 			<Motion.div
 				ref={props.ref}
 				initial={{opacity: 0}}

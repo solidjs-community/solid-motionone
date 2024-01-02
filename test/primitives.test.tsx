@@ -1,12 +1,13 @@
-import "../src/waapi.polyfill.js"
-import {createRoot, createSignal, Show} from "solid-js"
+import {createRoot, createSignal, JSX, Show} from "solid-js"
 import {screen, render} from "@solidjs/testing-library"
-import {Presence, VariantDefinition, motion} from "../src/index.js"
+import {Presence, VariantDefinition, motion} from "../src/index.jsx"
+
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 motion
 
 const duration = 0.001
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
 
 describe("motion directive", () => {
 	test("Applies initial as style to DOM node", async () => {
@@ -25,24 +26,19 @@ describe("motion directive", () => {
 	})
 
 	test("Animation runs on mount if initial and animate differ", async () => {
-		const element = await new Promise(resolve => {
-			const Component = () => {
-				let ref!: HTMLDivElement
-				setTimeout(() => resolve(ref), 60)
-				return (
-					<div
-						ref={ref}
-						use:motion={{
-							initial: {opacity: 0.4},
-							animate: {opacity: [0, 0.8]},
-							transition: {duration},
-						}}
-					/>
-				)
-			}
-			render(Component)
-		})
-		expect(element).toHaveStyle("opacity: 0.8")
+		let ref!: HTMLDivElement
+		render(() => (
+			<div
+				ref={ref}
+				use:motion={{
+					initial: {opacity: 0.4},
+					animate: {opacity: [0, 0.8]},
+					transition: {duration},
+				}}
+			/>
+		))
+		await new Promise<void>(resolve => setTimeout(() => resolve(), 60))
+		expect(ref.style.opacity).toBe("0.8")
 	})
 
 	test("Animation runs when target changes", async () => {
@@ -99,7 +95,7 @@ describe("motion directive", () => {
 				animate?: VariantDefinition
 				exit?: VariantDefinition
 			} = {},
-		) => {
+		): JSX.Element => {
 			return (
 				<Presence initial={props.initial ?? true}>
 					<Show when={props.show ?? true}>

@@ -1,6 +1,10 @@
-import {describe, expect, test} from "vitest"
 import {renderToString} from "solid-js/web"
-import {Motion, Presence} from "../src/index.js"
+import {Motion, Presence} from "../src/index.jsx"
+
+jest.mock("solid-js/web", () => ({
+	...jest.requireActual("solid-js/web"),
+	template: jest.fn(),
+}))
 
 describe("ssr", () => {
 	test("Renders", () => {

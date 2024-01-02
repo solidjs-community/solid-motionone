@@ -2,7 +2,8 @@
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"composite": true,
+		"checkJs": true,
 		"types": ["node"]
 	},
-	"include": ["./tsup.config.ts", "./vitest.config.ts"]
+	"include": ["./tsup.config.ts", "./jest.config.cjs"]
 }

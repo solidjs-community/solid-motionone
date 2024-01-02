@@ -6,6 +6,16 @@
 		"lib": ["ESNext"],
 		"newLine": "LF",
 		"types": [],
+		/*
+		referenced configs cannot have "noEmit": true
+		which conflicts with allowing js files
+		*/
+		"outDir": "dist",
+		"allowJs": true,
+		"checkJs": false,
+		/*
+		Lint rules
+		*/
 		"strict": true,
 		"isolatedModules": true,
 		"allowSyntheticDefaultImports": true,

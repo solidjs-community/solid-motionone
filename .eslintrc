@@ -4,7 +4,7 @@
 	"plugins": ["@typescript-eslint", "no-only-tests", "eslint-comments"],
 	"ignorePatterns": ["node_modules", "dist"],
 	"parserOptions": {
-		"project": ["./tsconfig.json", "./tsconfig.node.json"],
+		"project": ["./tsconfig.json", "./tsconfig.node.json", "./test/tsconfig.json"],
 		"tsconfigRootDir": ".",
 		"sourceType": "module"
 	},
