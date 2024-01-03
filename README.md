@@ -1,6 +1,14 @@
+<p>
+  <img width="100%" src="https://assets.solidjs.com/banner?background=tiles&project=solid-motionone" alt="solid-motionone">
+</p>
+
 # Solid MotionOne
 
-A tiny, performant animation library for SolidJS. Powered by [Motion One](https://motion.dev/).
+[![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg?style=for-the-badge&logo=pnpm)](https://pnpm.io/)
+[![npm](https://img.shields.io/npm/v/solid-motionone?style=for-the-badge)](https://www.npmjs.com/package/solid-motionone)
+[![downloads](https://img.shields.io/npm/dw/solid-motionone?color=blue&style=for-the-badge)](https://www.npmjs.com/package/solid-motionone)
+
+**A tiny, performant animation library for SolidJS. Powered by [Motion One](https://motion.dev/).**
 
 ## Introduction
 
