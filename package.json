@@ -4,7 +4,10 @@
 	"description": "A tiny, performant animation library for SolidJS",
 	"license": "MIT",
 	"author": "Damian Tarnawski <gthetarnav@gmail.com>; David Di Biase <dave.dibiase@gmail.com>",
-	"contributors": [],
+	"contributors": [
+		"Matt Perry <mattgperry@gmail.com>",
+		"Phil <phil.schaffarzyk@gridventures.de>"
+	],
 	"private": false,
 	"sideEffects": false,
 	"scripts": {
