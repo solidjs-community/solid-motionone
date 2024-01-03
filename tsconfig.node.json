@@ -5,5 +5,5 @@
 		"checkJs": true,
 		"types": ["node"]
 	},
-	"include": ["./tsup.config.ts", "./jest.config.cjs"]
+	"include": ["./tsup.config.ts", "jest"]
 }

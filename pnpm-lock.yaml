@@ -55,6 +55,9 @@ devDependencies:
   babel-preset-solid:
     specifier: ^1.8.6
     version: 1.8.6(@babel/core@7.23.7)
+  enhanced-resolve-jest:
+    specifier: ^1.1.0
+    version: 1.1.0
   eslint:
     specifier: ^8.56.0
     version: 8.56.0
