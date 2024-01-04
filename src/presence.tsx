@@ -10,7 +10,6 @@ import {
 	type Accessor,
 } from "solid-js"
 
-import {onCompleteExit} from "./primitives.js"
 import type {Options} from "./types.js"
 
 export type PresenceContextState = {
@@ -57,7 +56,7 @@ export const Presence: FlowComponent<{
 								batch(() => {
 									setMount(false)
 									;(mountedStates.get(el)?.getOptions() as Options).exit
-										? onCompleteExit(el, done)
+										? el.addEventListener("motioncomplete", done)
 										: done()
 								})
 							},

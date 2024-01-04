@@ -4,10 +4,6 @@ import {Accessor, createEffect, onCleanup, useContext} from "solid-js"
 import {PresenceContext, PresenceContextState} from "./presence.jsx"
 import {Options} from "./types.js"
 
-export function onCompleteExit(el: Element, fn: VoidFunction): void {
-	el.addEventListener("motioncomplete", fn)
-}
-
 /** @internal */
 export function createAndBindMotionState(
 	el: () => Element,
@@ -35,7 +31,7 @@ export function createAndBindMotionState(
 		onCleanup(() => {
 			if (presence_state && options().exit) {
 				state.setActive("exit", true)
-				onCompleteExit(el_ref, unmount)
+				el_ref.addEventListener("motioncomplete", unmount)
 			} else unmount()
 		})
 	})
