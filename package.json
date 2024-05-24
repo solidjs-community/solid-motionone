@@ -1,6 +1,6 @@
 {
 	"name": "solid-motionone",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A tiny, performant animation library for SolidJS",
 	"license": "MIT",
 	"author": "Damian Tarnawski <gthetarnav@gmail.com>; David Di Biase <dave.dibiase@gmail.com>",
