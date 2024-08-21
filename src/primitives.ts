@@ -1,8 +1,17 @@
-import {createMotionState, createStyles, MotionState, style} from "@motionone/dom"
+import {
+	AxisScrollInfo,
+	createMotionState,
+	createStyles,
+	MotionState,
+	style,
+	scroll,
+	ScrollOptions,
+} from "@motionone/dom"
 import {Accessor, createEffect, onCleanup, useContext} from "solid-js"
 
 import {PresenceContext, PresenceContextState} from "./presence.jsx"
 import {Options} from "./types.js"
+import {createStore, produce} from "solid-js/store"
 
 /** @internal */
 export function createAndBindMotionState(
@@ -63,6 +72,25 @@ export function createMotion(
 	}
 
 	return state
+}
+
+type MotionOneScrollContext = {
+	scrollX?: AxisScrollInfo
+	scrollY?: AxisScrollInfo
+}
+export function useScroll(options?: ScrollOptions): MotionOneScrollContext {
+	const [scrollStore, setScrollStore] = createStore<MotionOneScrollContext>()
+
+	scroll(({x, y}) => {
+		setScrollStore(
+			produce(scrollStore => {
+				scrollStore.scrollX = x
+				scrollStore.scrollY = y
+			}),
+		)
+	}, options)
+
+	return scrollStore
 }
 
 /**
