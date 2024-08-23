@@ -7,7 +7,7 @@ import {
 	scroll,
 	ScrollOptions,
 } from "@motionone/dom"
-import {Accessor, createEffect, onCleanup, useContext} from "solid-js"
+import {Accessor, batch, createEffect, createSignal, onCleanup, onMount, useContext} from "solid-js"
 
 import {PresenceContext, PresenceContextState} from "./presence.jsx"
 import {Options} from "./types.js"
@@ -74,23 +74,42 @@ export function createMotion(
 	return state
 }
 
-type MotionOneScrollContext = {
-	scrollX?: AxisScrollInfo
-	scrollY?: AxisScrollInfo
-}
-export function useScroll(options?: ScrollOptions): MotionOneScrollContext {
-	const [scrollStore, setScrollStore] = createStore<MotionOneScrollContext>()
+export function useScroll(options?: ScrollOptions): {
+	time: Accessor<number>
+	scrollX: AxisScrollInfo
+	scrollY: AxisScrollInfo
+} {
+	const [time, setTime] = createSignal(0)
+	const [scrollX, setScrollX] = createStore<AxisScrollInfo>({
+		current: 0,
+		offset: [],
+		progress: 0,
+		scrollLength: 0,
+		velocity: 0,
+		targetOffset: 0,
+		targetLength: 0,
+		containerLength: 0,
+	})
+	const [scrollY, setScrollY] = createStore<AxisScrollInfo>({
+		current: 0,
+		offset: [],
+		progress: 0,
+		scrollLength: 0,
+		velocity: 0,
+		targetOffset: 0,
+		targetLength: 0,
+		containerLength: 0,
+	})
 
-	scroll(({x, y}) => {
-		setScrollStore(
-			produce(scrollStore => {
-				scrollStore.scrollX = x
-				scrollStore.scrollY = y
-			}),
-		)
-	}, options)
+	onMount(() =>
+		scroll(({time, x, y}) => {
+			setTime(time)
+			setScrollX(x)
+			setScrollY(y)
+		}, options),
+	)
 
-	return scrollStore
+	return {time, scrollX, scrollY}
 }
 
 /**
