@@ -75,9 +75,9 @@
 	"peerDependencies": {
 		"solid-js": "^1.8.0"
 	},
-	"packageManager": "pnpm@8.13.0",
+	"packageManager": "pnpm@9.9.0",
 	"engines": {
-		"node": ">=18",
-		"pnpm": ">=8.12.0"
+		"node": ">=20",
+		"pnpm": ">=9.0.0"
 	}
 }
