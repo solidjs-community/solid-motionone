@@ -55,7 +55,7 @@ export const Presence: FlowComponent<{
 							onExit(el, done) {
 								batch(() => {
 									setMount(false)
-									;(mountedStates.get(el)?.getOptions() as Options).exit
+									;(mountedStates.get(el)?.getOptions() as Options)?.exit
 										? el.addEventListener("motioncomplete", done)
 										: done()
 								})
