@@ -2,7 +2,7 @@ import type * as motionone from "@motionone/dom"
 import type {PropertiesHyphen} from "csstype"
 import type {JSX, ParentProps} from "solid-js"
 
-export type VariantDefinition = motionone.VariantDefinition
+export type {VariantDefinition, Options} from "@motionone/dom"
 
 export interface MotionEventHandlers {
 	onMotionStart?: (event: motionone.MotionEvent) => void
@@ -15,19 +15,25 @@ export interface MotionEventHandlers {
 	onViewLeave?: (event: motionone.ViewEvent) => void
 }
 
-/*
-  Solid style attribute supports only kebab-case properties.
-  While @motionone/dom supports both camelCase and kebab-case,
-  but provides only camelCase properties in the types.
-*/
 declare module "@motionone/dom" {
+	/*
+	 Solid style attribute supports only kebab-case properties.
+	 While @motionone/dom supports both camelCase and kebab-case,
+	 but provides only camelCase properties in the types.
+	*/
 	interface CSSStyleDeclarationWithTransform
 		extends Omit<PropertiesHyphen, "direction" | "transition"> {}
+	
+	/*
+	 exit is missing in types in motionone core
+	 because it is only used in the Presence implementations
+	*/
+	interface Options {
+		exit?: motionone.VariantDefinition
+	}
 }
 
-export type Options = motionone.Options & {exit?: VariantDefinition}
-
-export type MotionComponentProps = ParentProps<MotionEventHandlers & Options>
+export type MotionComponentProps = ParentProps<MotionEventHandlers & motionone.Options>
 
 export type MotionComponent = {
 	// <Motion />
@@ -48,7 +54,7 @@ export type MotionProxy = MotionComponent & {
 declare module "solid-js" {
 	namespace JSX {
 		interface Directives {
-			motion: Options
+			motion: motionone.Options
 		}
 	}
 }
