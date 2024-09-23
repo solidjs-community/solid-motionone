@@ -23,7 +23,7 @@ declare module "@motionone/dom" {
 	*/
 	interface CSSStyleDeclarationWithTransform
 		extends Omit<PropertiesHyphen, "direction" | "transition"> {}
-	
+
 	/*
 	 exit is missing in types in motionone core
 	 because it is only used in the Presence implementations
