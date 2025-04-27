@@ -163,3 +163,19 @@ function App() {
   </Show>
 </Presence>
 ```
+
+## Scroll-Linked Animations
+
+`useScroll` provides reactive values based on Motion One's original [`scroll`](https://motion.dev/docs/scroll) function.
+
+```ts
+import { useScroll } from "solid-motionone"
+
+// ...
+
+const { time, scrollX, scrollY } = useScroll()
+
+createEffect(() => console.log(scrollY.progress))
+```
+
+These values can be used in coordination with Motion animation properties to create scroll-linked/parallax animations.
