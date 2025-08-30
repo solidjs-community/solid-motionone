@@ -1,0 +1,19 @@
+{
+  "name": "solid-motionone-demo",
+  "version": "1.0.0",
+  "description": "Demo project for solid-motionone",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "solid-js": "^1.8.0",
+    "solid-motionone": "file:../solid-motionone-1.1.0.tgz"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}

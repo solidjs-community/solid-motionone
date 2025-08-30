@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 9: Integration & Polish Demo - solid-motionone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #e9ecef;
+        }
+
+        .nav-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .demo-card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .demo-element {
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .demo-element:hover {
+            transform: scale(1.05);
+        }
+
+        .form-demo {
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: #ff6b6b;
+        }
+
+        .form-group input.success {
+            border-color: #51cf66;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .inspector-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .shared-element {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <button class="inspector-toggle" onclick="toggleInspector()">🔍 Toggle Inspector</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>Phase 9: Integration & Polish</h1>
+            <p>Router Integration • Form Integration • Animation Inspector</p>
+        </div>
+
+        <div class="nav">
+            <div class="nav-item active" onclick="showSection('router')">🚀 Router Integration</div>
+            <div class="nav-item" onclick="showSection('form')">📝 Form Integration</div>
+            <div class="nav-item" onclick="showSection('inspector')">🔍 Animation Inspector</div>
+            <div class="nav-item" onclick="showSection('combined')">🎯 Combined Demo</div>
+        </div>
+
+        <div class="content">
+            <!-- Router Integration Section -->
+            <div id="router-section" class="section">
+                <h2>🚀 Router Integration</h2>
+                <p>Demonstrates route transitions and shared element animations.</p>
+                
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>Route Transitions</h3>
+                        <div class="demo-element" onclick="simulateRouteTransition()">
+                            Click to simulate route transition
+                        </div>
+                        <div class="status info">
+                            Route: <span id="current-route">/home</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <h3>Shared Elements</h3>
+                        <div class="shared-element" id="shared-element">
+                            Shared Element (persists across routes)
+                        </div>
+                        <div class="status info">
+                            This element will animate smoothly between routes
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Integration Section -->
+            <div id="form-section" class="section hidden">
+                <h2>📝 Form Integration</h2>
+                <p>Demonstrates form validation animations and field interactions.</p>
+                
+                <div class="demo-grid">
+                    <div class="demo-card form-demo">
+                        <h3>Interactive Form</h3>
+                        <form id="demo-form" onsubmit="handleFormSubmit(event)">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" required minlength="6">
+                            </div>
+                            <button type="submit" class="btn">Submit Form</button>
+                        </form>
+                        <div id="form-status" class="status info hidden">
+                            Form status will appear here
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <h3>Field Animations</h3>
+                        <div class="demo-element" onclick="simulateFieldFocus()">
+                            Simulate Field Focus
+                        </div>
+                        <div class="demo-element" onclick="simulateFieldError()">
+                            Simulate Field Error
+                        </div>
+                        <div class="demo-element" onclick="simulateFieldSuccess()">
+                            Simulate Field Success
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animation Inspector Section -->
+            <div id="inspector-section" class="section hidden">
+                <h2>🔍 Animation Inspector</h2>
+                <p>Real-time animation debugging and performance monitoring.</p>
+                
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>Performance Metrics</h3>
+                        <div id="performance-panel">
+                            <div class="status info">
+                                FPS: <span id="fps-display">60</span>
+                            </div>
+                            <div class="status info">
+                                Memory: <span id="memory-display">0</span> MB
+                            </div>
+                            <div class="status info">
+                                Active Animations: <span id="animations-display">0</span>
+                            </div>
+                            <div class="status info">
+                                Total Elements: <span id="elements-display">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <h3>Animation Timeline</h3>
+                        <div id="timeline-panel" style="height: 150px; background: #f8f9fa; border-radius: 6px; padding: 10px; font-size: 12px; overflow-y: auto;">
+                            <div>Timeline events will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combined Demo Section -->
+            <div id="combined-section" class="section hidden">
+                <h2>🎯 Combined Demo</h2>
+                <p>All Phase 9 features working together.</p>
+                
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>Interactive Demo</h3>
+                        <div class="demo-element" onclick="triggerCombinedDemo()">
+                            Trigger Combined Animation
+                        </div>
+                        <div class="status info">
+                            This will trigger router, form, and inspector features
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <h3>Status Log</h3>
+                        <div id="status-log" style="height: 200px; background: #f8f9fa; border-radius: 6px; padding: 10px; font-size: 12px; overflow-y: auto;">
+                            <div>Status messages will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentRoute = '/home';
+        let inspectorEnabled = false;
+        let performanceMetrics = {
+            fps: 60,
+            memoryUsage: 0,
+            activeAnimations: 0,
+            totalElements: 0
+        };
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Router Integration
+        function simulateRouteTransition() {
+            const routes = ['/home', '/about', '/contact', '/profile'];
+            const currentIndex = routes.indexOf(currentRoute);
+            const nextIndex = (currentIndex + 1) % routes.length;
+            const newRoute = routes[nextIndex];
+            
+            // Update route display
+            document.getElementById('current-route').textContent = newRoute;
+            currentRoute = newRoute;
+            
+            // Simulate route transition animation
+            const element = document.querySelector('.demo-element');
+            element.style.transform = 'translateX(-100px)';
+            element.style.opacity = '0';
+            
+            setTimeout(() => {
+                element.textContent = `Route: ${newRoute}`;
+                element.style.transform = 'translateX(0)';
+                element.style.opacity = '1';
+            }, 300);
+            
+            logStatus(`Route transition: ${currentRoute} → ${newRoute}`);
+        }
+
+        // Form Integration
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const status = document.getElementById('form-status');
+            
+            // Simulate form validation
+            let isValid = true;
+            const errors = [];
+            
+            if (!formData.get('name')) {
+                errors.push('Name is required');
+                isValid = false;
+            }
+            
+            if (!formData.get('email')) {
+                errors.push('Email is required');
+                isValid = false;
+            }
+            
+            if (!formData.get('password') || formData.get('password').length < 6) {
+                errors.push('Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                status.className = 'status success';
+                status.textContent = 'Form submitted successfully!';
+                status.classList.remove('hidden');
+                
+                // Success animation
+                form.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    form.style.transform = 'scale(1)';
+                }, 200);
+                
+                logStatus('Form submitted successfully');
+            } else {
+                status.className = 'status error';
+                status.textContent = 'Validation errors: ' + errors.join(', ');
+                status.classList.remove('hidden');
+                
+                // Error animation
+                form.classList.add('shake');
+                setTimeout(() => {
+                    form.classList.remove('shake');
+                }, 500);
+                
+                logStatus('Form validation failed: ' + errors.join(', '));
+            }
+        }
+
+        function simulateFieldFocus() {
+            const input = document.getElementById('name');
+            input.focus();
+            input.style.transform = 'scale(1.02)';
+            input.style.borderColor = '#339af0';
+            logStatus('Field focused: name');
+        }
+
+        function simulateFieldError() {
+            const input = document.getElementById('email');
+            input.classList.add('error');
+            input.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                input.style.animation = '';
+            }, 500);
+            logStatus('Field error: email');
+        }
+
+        function simulateFieldSuccess() {
+            const input = document.getElementById('password');
+            input.classList.add('success');
+            input.style.transform = 'scale(1.01)';
+            logStatus('Field success: password');
+        }
+
+        // Animation Inspector
+        function toggleInspector() {
+            inspectorEnabled = !inspectorEnabled;
+            const button = document.querySelector('.inspector-toggle');
+            
+            if (inspectorEnabled) {
+                button.textContent = '🔍 Inspector: ON';
+                button.style.background = '#51cf66';
+                startPerformanceMonitoring();
+                logStatus('Animation inspector enabled');
+            } else {
+                button.textContent = '🔍 Inspector: OFF';
+                button.style.background = '#667eea';
+                stopPerformanceMonitoring();
+                logStatus('Animation inspector disabled');
+            }
+        }
+
+        function startPerformanceMonitoring() {
+            // Simulate performance monitoring
+            setInterval(() => {
+                if (inspectorEnabled) {
+                    performanceMetrics.fps = Math.floor(Math.random() * 20) + 50;
+                    performanceMetrics.memoryUsage = Math.floor(Math.random() * 100) + 50;
+                    performanceMetrics.activeAnimations = Math.floor(Math.random() * 10);
+                    performanceMetrics.totalElements = document.querySelectorAll('*').length;
+                    
+                    updatePerformanceDisplay();
+                }
+            }, 1000);
+        }
+
+        function stopPerformanceMonitoring() {
+            // Reset metrics
+            performanceMetrics = {
+                fps: 60,
+                memoryUsage: 0,
+                activeAnimations: 0,
+                totalElements: 0
+            };
+            updatePerformanceDisplay();
+        }
+
+        function updatePerformanceDisplay() {
+            document.getElementById('fps-display').textContent = performanceMetrics.fps;
+            document.getElementById('memory-display').textContent = performanceMetrics.memoryUsage;
+            document.getElementById('animations-display').textContent = performanceMetrics.activeAnimations;
+            document.getElementById('elements-display').textContent = performanceMetrics.totalElements;
+        }
+
+        // Combined Demo
+        function triggerCombinedDemo() {
+            logStatus('Starting combined demo...');
+            
+            // Simulate route transition
+            setTimeout(() => {
+                simulateRouteTransition();
+            }, 500);
+            
+            // Simulate form interaction
+            setTimeout(() => {
+                simulateFieldFocus();
+            }, 1000);
+            
+            // Simulate inspector toggle
+            setTimeout(() => {
+                if (!inspectorEnabled) {
+                    toggleInspector();
+                }
+            }, 1500);
+            
+            // Simulate performance update
+            setTimeout(() => {
+                logStatus('Combined demo completed successfully!');
+            }, 2000);
+        }
+
+        function logStatus(message) {
+            const log = document.getElementById('status-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEntry.style.marginBottom = '5px';
+            logEntry.style.padding = '2px 0';
+            logEntry.style.borderBottom = '1px solid #e9ecef';
+            
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logStatus('Phase 9 demo initialized');
+            updatePerformanceDisplay();
+        });
+    </script>
+</body>
+</html>

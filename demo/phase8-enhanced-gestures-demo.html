@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 8: Enhanced Gestures Demo - solid-motionone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .gesture-element {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .gesture-element:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .gesture-element.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .gesture-element.swipe-right {
+            animation: swipeRight 0.5s ease-out;
+        }
+
+        .gesture-element.swipe-left {
+            animation: swipeLeft 0.5s ease-out;
+        }
+
+        .gesture-element.long-press {
+            animation: longPress 0.3s ease-out;
+        }
+
+        .gesture-element.double-tap {
+            animation: doubleTap 0.3s ease-out;
+        }
+
+        .gesture-element.pinch {
+            animation: pinch 0.5s ease-out;
+        }
+
+        .gesture-element.rotate {
+            animation: rotate 0.5s ease-out;
+        }
+
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn.active {
+            background: #4CAF50;
+        }
+
+        .performance-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        @keyframes swipeRight {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes swipeLeft {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-20px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes longPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes doubleTap {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pinch {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .instructions li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Phase 8: Enhanced Gestures Demo</h1>
+        
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ul>
+                <li><strong>Swipe:</strong> Drag left/right/up/down on gesture elements</li>
+                <li><strong>Long Press:</strong> Hold down for 500ms on gesture elements</li>
+                <li><strong>Double Tap:</strong> Tap twice quickly on gesture elements</li>
+                <li><strong>Pinch:</strong> Use two fingers to pinch (mobile/touch devices)</li>
+                <li><strong>Rotate:</strong> Use two fingers to rotate (mobile/touch devices)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Gesture Recognition Patterns</h2>
+            <div class="demo-grid">
+                <div class="gesture-element" id="swipe-element">
+                    <h3>Swipe Gesture</h3>
+                    <p>Swipe in any direction</p>
+                    <div class="status" id="swipe-status">Ready for swipe gesture</div>
+                </div>
+                
+                <div class="gesture-element" id="longpress-element">
+                    <h3>Long Press</h3>
+                    <p>Hold for 500ms</p>
+                    <div class="status" id="longpress-status">Ready for long press</div>
+                </div>
+                
+                <div class="gesture-element" id="doubletap-element">
+                    <h3>Double Tap</h3>
+                    <p>Tap twice quickly</p>
+                    <div class="status" id="doubletap-status">Ready for double tap</div>
+                </div>
+                
+                <div class="gesture-element" id="pinch-element">
+                    <h3>Pinch Gesture</h3>
+                    <p>Pinch with two fingers</p>
+                    <div class="status" id="pinch-status">Ready for pinch gesture</div>
+                </div>
+                
+                <div class="gesture-element" id="rotate-element">
+                    <h3>Rotate Gesture</h3>
+                    <p>Rotate with two fingers</p>
+                    <div class="status" id="rotate-status">Ready for rotate gesture</div>
+                </div>
+                
+                <div class="gesture-element" id="pan-element">
+                    <h3>Pan Gesture</h3>
+                    <p>Drag to pan</p>
+                    <div class="status" id="pan-status">Ready for pan gesture</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎼 Advanced Orchestration</h2>
+            <div class="controls">
+                <button class="btn" id="parallel-btn">Parallel Coordination</button>
+                <button class="btn" id="sequential-btn">Sequential Coordination</button>
+                <button class="btn" id="dependent-btn">Dependent Coordination</button>
+                <button class="btn" id="performance-btn">Performance Mode</button>
+            </div>
+            
+            <div class="demo-grid">
+                <div class="gesture-element" id="orchestrated-1">
+                    <h3>Element 1</h3>
+                    <p>Part of orchestration group</p>
+                </div>
+                
+                <div class="gesture-element" id="orchestrated-2">
+                    <h3>Element 2</h3>
+                    <p>Part of orchestration group</p>
+                </div>
+                
+                <div class="gesture-element" id="orchestrated-3">
+                    <h3>Element 3</h3>
+                    <p>Part of orchestration group</p>
+                </div>
+            </div>
+            
+            <div class="performance-panel" id="performance-panel" style="display: none;">
+                <h3>Performance Metrics</h3>
+                <div class="performance-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="fps-value">60</div>
+                        <div class="metric-label">FPS</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="memory-value">0</div>
+                        <div class="metric-label">Memory (MB)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="animations-value">0</div>
+                        <div class="metric-label">Active Animations</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="gestures-value">0</div>
+                        <div class="metric-label">Active Gestures</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Combined Features</h2>
+            <div class="demo-grid">
+                <div class="gesture-element" id="combined-element">
+                    <h3>Combined Gesture + Orchestration</h3>
+                    <p>Try multiple gestures with orchestration</p>
+                    <div class="status" id="combined-status">Ready for combined features</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate gesture recognition and orchestration
+        class GestureSimulator {
+            constructor() {
+                this.activeGestures = 0;
+                this.performanceMode = false;
+                this.init();
+            }
+
+            init() {
+                this.setupGestureElements();
+                this.setupOrchestrationControls();
+                this.startPerformanceMonitoring();
+            }
+
+            setupGestureElements() {
+                const elements = [
+                    { id: 'swipe-element', type: 'swipe', statusId: 'swipe-status' },
+                    { id: 'longpress-element', type: 'longPress', statusId: 'longpress-status' },
+                    { id: 'doubletap-element', type: 'doubleTap', statusId: 'doubletap-status' },
+                    { id: 'pinch-element', type: 'pinch', statusId: 'pinch-status' },
+                    { id: 'rotate-element', type: 'rotate', statusId: 'rotate-status' },
+                    { id: 'pan-element', type: 'pan', statusId: 'pan-status' },
+                    { id: 'combined-element', type: 'combined', statusId: 'combined-status' }
+                ];
+
+                elements.forEach(({ id, type, statusId }) => {
+                    const element = document.getElementById(id);
+                    const status = document.getElementById(statusId);
+                    
+                    if (element && status) {
+                        this.setupGestureHandlers(element, type, status);
+                    }
+                });
+            }
+
+            setupGestureHandlers(element, type, status) {
+                let startTime = 0;
+                let startX = 0;
+                let startY = 0;
+                let isPressed = false;
+                let tapCount = 0;
+                let lastTapTime = 0;
+
+                // Mouse/Touch events
+                element.addEventListener('mousedown', (e) => this.handleStart(e, element, type, status));
+                element.addEventListener('mousemove', (e) => this.handleMove(e, element, type, status));
+                element.addEventListener('mouseup', (e) => this.handleEnd(e, element, type, status));
+                
+                // Touch events for mobile
+                element.addEventListener('touchstart', (e) => this.handleStart(e, element, type, status));
+                element.addEventListener('touchmove', (e) => this.handleMove(e, element, type, status));
+                element.addEventListener('touchend', (e) => this.handleEnd(e, element, type, status));
+
+                // Store handlers for cleanup
+                element._gestureHandlers = {
+                    start: (e) => this.handleStart(e, element, type, status),
+                    move: (e) => this.handleMove(e, element, type, status),
+                    end: (e) => this.handleEnd(e, element, type, status)
+                };
+            }
+
+            handleStart(e, element, type, status) {
+                e.preventDefault();
+                const point = this.getEventPoint(e);
+                element._startTime = Date.now();
+                element._startX = point.x;
+                element._startY = point.y;
+                element._isPressed = true;
+                element._tapCount = (element._tapCount || 0) + 1;
+
+                status.textContent = `${type} started at (${point.x}, ${point.y})`;
+                element.classList.add('active');
+                this.activeGestures++;
+            }
+
+            handleMove(e, element, type, status) {
+                if (!element._isPressed) return;
+                
+                e.preventDefault();
+                const point = this.getEventPoint(e);
+                const deltaX = point.x - element._startX;
+                const deltaY = point.y - element._startY;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                if (distance > 50) {
+                    // Detect swipe direction
+                    const direction = this.getSwipeDirection(deltaX, deltaY);
+                    this.triggerGesture(element, type, status, { direction, distance });
+                }
+            }
+
+            handleEnd(e, element, type, status) {
+                if (!element._isPressed) return;
+                
+                e.preventDefault();
+                const duration = Date.now() - element._startTime;
+                element._isPressed = false;
+
+                // Handle different gesture types
+                if (type === 'longPress' && duration > 500) {
+                    this.triggerGesture(element, type, status, { duration });
+                } else if (type === 'doubleTap') {
+                    const now = Date.now();
+                    if (now - element._lastTapTime < 300) {
+                        this.triggerGesture(element, type, status, { tapCount: element._tapCount });
+                    }
+                    element._lastTapTime = now;
+                } else if (type === 'pan') {
+                    const point = this.getEventPoint(e);
+                    const deltaX = point.x - element._startX;
+                    const deltaY = point.y - element._startY;
+                    this.triggerGesture(element, type, status, { deltaX, deltaY });
+                }
+
+                status.textContent = `${type} completed`;
+                element.classList.remove('active');
+                this.activeGestures--;
+            }
+
+            triggerGesture(element, type, status, data) {
+                // Add animation class based on gesture type
+                element.classList.remove('swipe-right', 'swipe-left', 'long-press', 'double-tap', 'pinch', 'rotate');
+                
+                if (type === 'swipe') {
+                    element.classList.add(data.direction === 'right' ? 'swipe-right' : 'swipe-left');
+                    status.textContent = `Swipe ${data.direction} detected (${Math.round(data.distance)}px)`;
+                } else if (type === 'longPress') {
+                    element.classList.add('long-press');
+                    status.textContent = `Long press detected (${data.duration}ms)`;
+                } else if (type === 'doubleTap') {
+                    element.classList.add('double-tap');
+                    status.textContent = `Double tap detected (${data.tapCount} taps)`;
+                } else if (type === 'pinch') {
+                    element.classList.add('pinch');
+                    status.textContent = 'Pinch gesture detected';
+                } else if (type === 'rotate') {
+                    element.classList.add('rotate');
+                    status.textContent = 'Rotate gesture detected';
+                } else if (type === 'pan') {
+                    status.textContent = `Pan detected (${Math.round(data.deltaX)}, ${Math.round(data.deltaY)})`;
+                }
+
+                // Trigger orchestration if enabled
+                if (this.performanceMode) {
+                    this.triggerOrchestration(type, data);
+                }
+            }
+
+            getEventPoint(e) {
+                if (e.touches && e.touches.length > 0) {
+                    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+                return { x: e.clientX, y: e.clientY };
+            }
+
+            getSwipeDirection(deltaX, deltaY) {
+                const absX = Math.abs(deltaX);
+                const absY = Math.abs(deltaY);
+                return absX > absY ? (deltaX > 0 ? 'right' : 'left') : (deltaY > 0 ? 'down' : 'up');
+            }
+
+            setupOrchestrationControls() {
+                const buttons = ['parallel-btn', 'sequential-btn', 'dependent-btn', 'performance-btn'];
+                buttons.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.addEventListener('click', () => this.handleOrchestrationControl(id));
+                    }
+                });
+            }
+
+            handleOrchestrationControl(controlId) {
+                const buttons = document.querySelectorAll('.btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+
+                const activeBtn = document.getElementById(controlId);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+
+                const elements = ['orchestrated-1', 'orchestrated-2', 'orchestrated-3'];
+                const orchestratedElements = elements.map(id => document.getElementById(id)).filter(Boolean);
+
+                switch (controlId) {
+                    case 'parallel-btn':
+                        this.coordinateParallel(orchestratedElements);
+                        break;
+                    case 'sequential-btn':
+                        this.coordinateSequential(orchestratedElements);
+                        break;
+                    case 'dependent-btn':
+                        this.coordinateDependent(orchestratedElements);
+                        break;
+                    case 'performance-btn':
+                        this.togglePerformanceMode();
+                        break;
+                }
+            }
+
+            coordinateParallel(elements) {
+                elements.forEach((element, index) => {
+                    setTimeout(() => {
+                        element.classList.add('active');
+                        setTimeout(() => element.classList.remove('active'), 500);
+                    }, index * 100);
+                });
+            }
+
+            coordinateSequential(elements) {
+                elements.reduce((promise, element) => {
+                    return promise.then(() => {
+                        element.classList.add('active');
+                        return new Promise(resolve => {
+                            setTimeout(() => {
+                                element.classList.remove('active');
+                                resolve();
+                            }, 500);
+                        });
+                    });
+                }, Promise.resolve());
+            }
+
+            coordinateDependent(elements) {
+                elements.forEach((element, index) => {
+                    setTimeout(() => {
+                        element.classList.add('active');
+                        setTimeout(() => element.classList.remove('active'), 300);
+                    }, index * 200);
+                });
+            }
+
+            togglePerformanceMode() {
+                this.performanceMode = !this.performanceMode;
+                const panel = document.getElementById('performance-panel');
+                if (panel) {
+                    panel.style.display = this.performanceMode ? 'block' : 'none';
+                }
+            }
+
+            triggerOrchestration(type, data) {
+                console.log('Orchestration triggered:', type, data);
+            }
+
+            startPerformanceMonitoring() {
+                let frameCount = 0;
+                let lastTime = Date.now();
+
+                const updatePerformance = () => {
+                    frameCount++;
+                    const now = Date.now();
+
+                    if (now - lastTime >= 1000) {
+                        const fps = Math.round((frameCount * 1000) / (now - lastTime));
+                        const memory = Math.round(Math.random() * 50 + 10); // Simulated memory usage
+                        const animations = this.activeGestures;
+
+                        this.updatePerformanceDisplay(fps, memory, animations);
+                        
+                        frameCount = 0;
+                        lastTime = now;
+                    }
+
+                    if (this.performanceMode) {
+                        requestAnimationFrame(updatePerformance);
+                    }
+                };
+
+                updatePerformance();
+            }
+
+            updatePerformanceDisplay(fps, memory, animations) {
+                const fpsElement = document.getElementById('fps-value');
+                const memoryElement = document.getElementById('memory-value');
+                const animationsElement = document.getElementById('animations-value');
+                const gesturesElement = document.getElementById('gestures-value');
+
+                if (fpsElement) fpsElement.textContent = fps;
+                if (memoryElement) memoryElement.textContent = memory;
+                if (animationsElement) animationsElement.textContent = animations;
+                if (gesturesElement) gesturesElement.textContent = this.activeGestures;
+            }
+        }
+
+        // Initialize the gesture simulator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new GestureSimulator();
+        });
+    </script>
+</body>
+</html>
