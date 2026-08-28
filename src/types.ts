@@ -1,39 +1,69 @@
-import type * as motionone from "@motionone/dom"
+import type {AnimationOptions, DOMKeyframesDefinition} from "motion-dom"
 import type {PropertiesHyphen} from "csstype"
-import type {JSX, ParentProps} from "solid-js"
+import type {ParentProps} from "solid-js"
+import type {JSX} from "@solidjs/web"
 
-export type {VariantDefinition, Options} from "@motionone/dom"
-
-export interface MotionEventHandlers {
-	onMotionStart?: (event: motionone.MotionEvent) => void
-	onMotionComplete?: (event: motionone.MotionEvent) => void
-	onHoverStart?: (event: motionone.CustomPointerEvent) => void
-	onHoverEnd?: (event: motionone.CustomPointerEvent) => void
-	onPressStart?: (event: motionone.CustomPointerEvent) => void
-	onPressEnd?: (event: motionone.CustomPointerEvent) => void
-	onViewEnter?: (event: motionone.ViewEvent) => void
-	onViewLeave?: (event: motionone.ViewEvent) => void
+/** Matches framer-motion/dom's (unexported) `InViewOptions` shape used by `inView()`. */
+export interface ViewportOptions {
+	root?: Element | Document
+	margin?: string
+	amount?: "some" | "all" | number
 }
 
-declare module "@motionone/dom" {
+declare module "motion-dom" {
 	/*
 	 Solid style attribute supports only kebab-case properties.
-	 While @motionone/dom supports both camelCase and kebab-case,
+	 While motion-dom supports both camelCase and kebab-case,
 	 but provides only camelCase properties in the types.
 	*/
 	interface CSSStyleDeclarationWithTransform
 		extends Omit<PropertiesHyphen, "direction" | "transition"> {}
-
-	/*
-	 exit is missing in types in motionone core
-	 because it is only used in the Presence implementations
-	*/
-	interface Options {
-		exit?: motionone.VariantDefinition
-	}
 }
 
-export type MotionComponentProps = ParentProps<MotionEventHandlers & motionone.Options>
+/** A target of style values to animate to/from, with an optional per-target transition override. */
+export type Target = DOMKeyframesDefinition & {transition?: AnimationOptions}
+
+/** Either a direct target object, or a string key into the `variants` prop. */
+export type VariantDefinition = Target | string
+
+export type {AnimationOptions}
+
+export interface Options {
+	initial?: VariantDefinition | false
+	animate?: VariantDefinition
+	exit?: VariantDefinition
+	hover?: VariantDefinition
+	press?: VariantDefinition
+	inView?: VariantDefinition
+	inViewOptions?: ViewportOptions
+	variants?: Record<string, Target>
+	transition?: AnimationOptions
+}
+
+export interface MotionEvent extends CustomEvent {
+	detail: {target: Target}
+}
+
+export interface CustomPointerEvent extends CustomEvent {
+	detail: {originalEvent: PointerEvent}
+}
+
+export interface ViewEvent extends CustomEvent {
+	detail: {originalEntry: IntersectionObserverEntry}
+}
+
+export interface MotionEventHandlers {
+	onMotionStart?: (event: MotionEvent) => void
+	onMotionComplete?: (event: MotionEvent) => void
+	onHoverStart?: (event: CustomPointerEvent) => void
+	onHoverEnd?: (event: CustomPointerEvent) => void
+	onPressStart?: (event: CustomPointerEvent) => void
+	onPressEnd?: (event: CustomPointerEvent) => void
+	onViewEnter?: (event: ViewEvent) => void
+	onViewLeave?: (event: ViewEvent) => void
+}
+
+export type MotionComponentProps = ParentProps<MotionEventHandlers & Options>
 
 export type MotionComponent = {
 	// <Motion />
@@ -49,14 +79,6 @@ export type MotionProxyComponent<T> = (props: T & MotionComponentProps) => JSX.E
 export type MotionProxy = MotionComponent & {
 	// <Motion.div />
 	[K in keyof JSX.IntrinsicElements]: MotionProxyComponent<JSX.IntrinsicElements[K]>
-}
-
-declare module "solid-js" {
-	namespace JSX {
-		interface Directives {
-			motion: motionone.Options
-		}
-	}
 }
 
 // export only here so the `JSX` import won't be shaken off the tree:

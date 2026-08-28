@@ -1,8 +1,24 @@
-import {createMotionState, createStyles, MotionState, style} from "@motionone/dom"
-import {Accessor, createEffect, onCleanup, useContext} from "solid-js"
+import {createMotionState, createStyles, MotionState, style} from "./engine.js"
+import {Accessor, Context, createEffect, useContext} from "solid-js"
 
 import {PresenceContext, PresenceContextState} from "./presence.jsx"
 import {Options} from "./types.js"
+
+/*
+Solid 2.0's useContext throws ContextNotFoundError whenever the resolved value
+is undefined, even with an explicit `undefined` default — there's no built-in
+way to ask "is there a provider" without throwing. ParentContext/PresenceContext
+are legitimately optional (most Motion components have neither an ancestor
+Presence nor a parent Motion), so reads of them go through this instead.
+*/
+/** @internal */
+export function tryUseContext<T>(context: Context<T>): T | undefined {
+	try {
+		return useContext(context)
+	} catch {
+		return undefined
+	}
+}
 
 /** @internal */
 export function createAndBindMotionState(
@@ -16,25 +32,33 @@ export function createAndBindMotionState(
 		parent_state,
 	)
 
-	createEffect(() => {
-		/*
-		Motion components under <Presence exitBeforeEnter> should wait before animating in
-		this is done with additional signal, because effects will still run immediately
-		*/
-		if (presence_state && !presence_state.mount()) return
+	/*
+	Motion components under <Presence exitBeforeEnter> should wait before animating in
+	this is done with additional signal, because effects will still run immediately
+	*/
+	createEffect(
+		() => (presence_state ? presence_state.mount() : true),
+		shouldMount => {
+			if (!shouldMount) return
 
-		const el_ref = el(),
-			unmount = state.mount(el_ref)
+			const el_ref = el(),
+				unmount = state.mount(el_ref)
 
-		createEffect(() => state.update(options()))
+			return () => {
+				if (presence_state && options().exit) {
+					state.setActive("exit", true)
+					el_ref.addEventListener("motioncomplete", unmount)
+				} else unmount()
+			}
+		},
+	)
 
-		onCleanup(() => {
-			if (presence_state && options().exit) {
-				state.setActive("exit", true)
-				el_ref.addEventListener("motioncomplete", unmount)
-			} else unmount()
-		})
-	})
+	createEffect(
+		() => (presence_state && !presence_state.mount() ? undefined : options()),
+		opts => {
+			if (opts) state.update(opts)
+		},
+	)
 
 	return [state, createStyles(state.getTarget())] as const
 }
@@ -66,11 +90,19 @@ export function createMotion(
 }
 
 /**
- * motion is a Solid directive that makes binding to elements easier.
+ * motion is a ref factory that makes binding to elements easier.
  *
- * @param el Target Element to bind to.
- * @param props Options to effect the animation.
+ * @param options Options to effect the animation.
+ * @returns A ref callback to pass to an element's `ref` prop.
+ *
+ * @example
+ * ```tsx
+ * <div ref={motion(() => ({ animate: { opacity: 1 } }))} />
+ * ```
  */
-export function motion(el: Element, props: Accessor<Options>): void {
-	createMotion(el, props, useContext(PresenceContext))
+export function motion(options: Accessor<Options>): (el: Element) => void {
+	const presence_state = tryUseContext(PresenceContext)
+	return el => {
+		createMotion(el, options, presence_state)
+	}
 }

@@ -7,6 +7,8 @@ const common_config = {
 	rootDir: "../",
 	globals: {"ts-jest": {useESM: true}},
 	transformIgnorePatterns: ["node_modules/(?!solid-js.*|.*(?<=.[tj]sx))$"],
+	/* handles @solid-primitives/* ESM-only next-tag resolution, see resolver.cjs */
+	resolver: resolver_path,
 	/*
 	to support NodeNext module imports
 	https://stackoverflow.com/questions/73735202/typescript-jest-imports-with-js-extension-cause-error-cannot-find-module
@@ -24,13 +26,16 @@ const client_config = {
 	testEnvironment: "jsdom",
 	testMatch: ["<rootDir>/test/**/*.test.(js|ts)?(x)"],
 	testPathIgnorePatterns: ["/node_modules/", "ssr"],
-	setupFilesAfterEnv: ["<rootDir>/test/waapi-polyfill.js"],
-	/* uses a webpack style resolver, the default one has many issues. */
-	resolver: resolver_path,
-	/* transform ts and tsx files */
+	setupFilesAfterEnv: ["<rootDir>/test/setup.js"],
+	/* picks the "browser" exports condition so @solidjs/web resolves its DOM build */
+	testEnvironmentOptions: {
+		customExportConditions: ["browser"],
+	},
+	/* transform ts, tsx, and esm .mjs files */
 	transform: {
 		"\\.[jt]sx$": transform_client_path,
 		"\\.[jt]s$": transform_client_path,
+		"\\.mjs$": transform_client_path,
 	},
 }
 
@@ -40,10 +45,11 @@ const server_config = {
 	// avoid loading jsdom.
 	testEnvironment: "node",
 	testMatch: ["<rootDir>/test/ssr.test.(js|ts)?(x)"],
-	/* transform ts and tsx files */
+	/* transform ts, tsx, and esm .mjs files */
 	transform: {
 		"\\.[jt]sx$": transform_ssr_path,
 		"\\.[jt]s$": transform_ssr_path,
+		"\\.mjs$": transform_ssr_path,
 	},
 }
 

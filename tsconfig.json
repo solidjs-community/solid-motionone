@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM"],
 		"jsx": "preserve",
-		"jsxImportSource": "solid-js"
+		"jsxImportSource": "@solidjs/web"
 	},
 	"include": ["src"],
 	"references": [{"path": "./tsconfig.node.json"}]

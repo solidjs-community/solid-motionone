@@ -1,20 +1,14 @@
-import {mountedStates} from "@motionone/dom"
+import {mountedStates} from "./engine.js"
 import {resolveFirst} from "@solid-primitives/refs"
 import {createSwitchTransition} from "@solid-primitives/transition-group"
-import {
-	createContext,
-	createSignal,
-	batch,
-	type FlowComponent,
-	type JSX,
-	type Accessor,
-} from "solid-js"
+import {createContext, createSignal, flush, type FlowComponent, type Accessor} from "solid-js"
+import type {JSX} from "@solidjs/web"
 
 export type PresenceContextState = {
 	initial: boolean
 	mount: Accessor<boolean>
 }
-export const PresenceContext = createContext<PresenceContextState>()
+export const PresenceContext = createContext<PresenceContextState | undefined>(undefined)
 
 /**
  * Perform exit/enter trantisions of children `<Motion>` components.
@@ -43,7 +37,7 @@ export const Presence: FlowComponent<{
 	const [mount, setMount] = createSignal(true),
 		state = {initial: props.initial ?? true, mount},
 		render = (
-			<PresenceContext.Provider value={state}>
+			<PresenceContext value={state}>
 				{
 					createSwitchTransition(
 						resolveFirst(() => props.children),
@@ -51,25 +45,38 @@ export const Presence: FlowComponent<{
 							appear: state.initial,
 							mode: props.exitBeforeEnter ? "out-in" : "parallel",
 							onExit(el, done) {
-								batch(() => {
-									setMount(false)
-									mountedStates.get(el)?.getOptions()?.exit
-										? el.addEventListener("motioncomplete", done)
-										: done()
-								})
+								/*
+								onExit/onEnter run from a `motioncomplete` DOM CustomEvent
+								listener — outside Solid's own scheduler — so signal writes
+								here need an explicit flush to reach dependent effects (e.g.
+								a sibling Motion's mount-gating effect) before this returns.
+								*/
+								setMount(false)
+								flush()
+								mountedStates.get(el)?.getOptions().exit
+									? el.addEventListener("motioncomplete", () => {
+											/*
+											`done` (transition-group's own callback) writes the
+											signal that actually removes this element from the
+											rendered list — also outside Solid's scheduler, so it
+											needs its own flush to take effect before callers see it.
+											*/
+											done()
+											flush()
+										})
+									: done()
 							},
 							onEnter(_, done) {
-								batch(() => {
-									setMount(true)
-									done()
-								})
+								setMount(true)
+								flush()
+								done()
 							},
 						},
 					) as any as JSX.Element
 				}
-			</PresenceContext.Provider>
+			</PresenceContext>
 		)
 
-	state.initial = true
+	queueMicrotask(() => (state.initial = true))
 	return render
 }

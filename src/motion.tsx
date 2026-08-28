@@ -1,10 +1,11 @@
-import {Dynamic} from "solid-js/web"
-import {useContext, splitProps, JSX, createContext} from "solid-js"
+import {Dynamic} from "@solidjs/web"
+import type {JSX} from "@solidjs/web"
+import {omit, createContext} from "solid-js"
 import {combineStyle} from "@solid-primitives/props"
-import {MotionState} from "@motionone/dom"
+import {MotionState} from "./engine.js"
 
 import type {MotionComponentProps, MotionProxy, MotionProxyComponent} from "./types.js"
-import {createAndBindMotionState} from "./primitives.js"
+import {createAndBindMotionState, tryUseContext} from "./primitives.js"
 import {PresenceContext} from "./presence.jsx"
 
 const OPTION_KEYS = [
@@ -21,7 +22,7 @@ const OPTION_KEYS = [
 
 const ATTR_KEYS = ["tag"] as const
 
-export const ParentContext = createContext<MotionState>()
+export const ParentContext = createContext<MotionState | undefined>(undefined)
 
 /** @internal */
 export const MotionComponent = (
@@ -31,18 +32,28 @@ export const MotionComponent = (
 		style?: JSX.CSSProperties | string
 	},
 ): JSX.Element => {
-	const [options, , attrs] = splitProps(props, OPTION_KEYS, ATTR_KEYS)
+	const attrs = omit(props, ...OPTION_KEYS, ...ATTR_KEYS)
 
 	const [state, style] = createAndBindMotionState(
 		() => root,
-		() => ({...options}),
-		useContext(PresenceContext),
-		useContext(ParentContext),
+		() => ({
+			initial: props.initial,
+			animate: props.animate,
+			inView: props.inView,
+			inViewOptions: props.inViewOptions,
+			hover: props.hover,
+			press: props.press,
+			variants: props.variants,
+			transition: props.transition,
+			exit: props.exit,
+		}),
+		tryUseContext(PresenceContext),
+		tryUseContext(ParentContext),
 	)
 
 	let root!: Element
 	return (
-		<ParentContext.Provider value={state}>
+		<ParentContext value={state}>
 			<Dynamic
 				{...attrs}
 				ref={(el: Element) => {
@@ -52,7 +63,7 @@ export const MotionComponent = (
 				component={props.tag || "div"}
 				style={combineStyle(props.style, style)}
 			/>
-		</ParentContext.Provider>
+		</ParentContext>
 	)
 }
 

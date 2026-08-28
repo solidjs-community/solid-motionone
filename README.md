@@ -8,11 +8,11 @@
 [![npm](https://img.shields.io/npm/v/solid-motionone?style=for-the-badge)](https://www.npmjs.com/package/solid-motionone)
 [![downloads](https://img.shields.io/npm/dw/solid-motionone?color=blue&style=for-the-badge)](https://www.npmjs.com/package/solid-motionone)
 
-**A tiny, performant animation library for SolidJS. Powered by [Motion One](https://motion.dev/).**
+**A tiny, performant animation library for SolidJS. Powered by [Motion](https://motion.dev/).**
 
 ## Introduction
 
-Motion One for Solid is a 5.8kb animation library for SolidJS. It takes advantage of Solid's excellent performance and simple declarative syntax. This package supplies springs, independent transforms, and hardware accelerated animations.
+Motion for Solid is a small animation library for SolidJS. It takes advantage of Solid's excellent performance and simple declarative syntax. This package supplies springs, independent transforms, and hardware accelerated animations.
 
 ## Installation
 

@@ -1,5 +1,6 @@
-import {mountedStates} from "@motionone/dom"
-import {children, createRoot, createSignal, JSX, Show} from "solid-js"
+import {mountedStates} from "../src/engine.js"
+import {createRoot, createSignal, flush, Show} from "solid-js"
+import type {JSX} from "@solidjs/web"
 import {screen, render} from "@solidjs/testing-library"
 import {Presence, Motion, VariantDefinition} from "../src/index.jsx"
 import type {RefProps} from "@solid-primitives/refs"
@@ -32,6 +33,7 @@ describe("Presence", () => {
 		const wrapper = render(() => (
 			<TestComponent show initial={false} animate={{opacity: 0.5}} />
 		))
+		flush()
 		expect(wrapper.container.outerHTML).toEqual(
 			`<div><div data-testid="child" style="opacity: 0.5;"></div></div>`,
 		)
@@ -72,27 +74,21 @@ describe("Presence", () => {
 			transition: {duration: 0.001},
 		}
 
-		const rendered = createRoot(() =>
-			children(() => (
-				<Presence>
-					<Show when={show()}>
+		const {container} = render(() => (
+			<Presence>
+				<Show when={show()}>
+					<Motion ref={ref_1} exit={exit_animation} onMotionComplete={() => resolve_1()}>
 						<Motion
-							ref={ref_1}
+							ref={ref_2}
 							exit={exit_animation}
-							onMotionComplete={() => resolve_1()}
-						>
-							<Motion
-								ref={ref_2}
-								exit={exit_animation}
-								onMotionComplete={() => resolve_2()}
-							/>
-						</Motion>
-					</Show>
-				</Presence>
-			)),
-		)
+							onMotionComplete={() => resolve_2()}
+						/>
+					</Motion>
+				</Show>
+			</Presence>
+		))
 
-		expect(rendered()).toContain(ref_1)
+		expect(container.contains(ref_1)).toBeTruthy()
 		expect(ref_1.firstChild).toBe(ref_2)
 		expect(ref_1.style.opacity).toBe("")
 		expect(ref_2.style.opacity).toBe("")
@@ -100,8 +96,9 @@ describe("Presence", () => {
 		expect(mountedStates.has(ref_2)).toBeTruthy()
 
 		setShow(false)
+		flush()
 
-		expect(rendered()).toContain(ref_1)
+		expect(container.contains(ref_1)).toBeTruthy()
 		expect(ref_1.style.opacity).toBe("")
 		expect(ref_2.style.opacity).toBe("")
 
@@ -112,7 +109,7 @@ describe("Presence", () => {
 			}
 		})
 
-		expect(rendered()).toHaveLength(0)
+		expect(container.contains(ref_1)).toBeFalsy()
 		expect(ref_1.style.opacity).toBe("0")
 		expect(ref_2.style.opacity).toBe("0")
 		expect(mountedStates.has(ref_1)).toBeFalsy()
@@ -136,47 +133,42 @@ describe("Presence", () => {
 			/>
 		)
 
-		const rendered = createRoot(() =>
-			children(() => (
-				<Presence exitBeforeEnter>
-					<Show
-						when={condition()}
-						children={<El ref={ref_1} />}
-						fallback={<El ref={ref_2} />}
-					/>
-				</Presence>
-			)),
-		)
+		const {container} = render(() => (
+			<Presence exitBeforeEnter>
+				<Show when={condition()} children={<El ref={ref_1} />} fallback={<El ref={ref_2} />} />
+			</Presence>
+		))
 
-		expect(rendered()).toContain(ref_1)
+		expect(container.contains(ref_1)).toBeTruthy()
 		expect(ref_1.style.opacity).toBe("0")
 
 		// enter 1
 		await new Promise<void>(resolve => (resolve_last = resolve))
 
-		expect(rendered()).toContain(ref_1)
+		expect(container.contains(ref_1)).toBeTruthy()
 		expect(ref_1.style.opacity).toBe("1")
 
 		setCondition(false)
+		flush()
 
-		expect(rendered()).toContain(ref_1)
-		expect(rendered()).not.toContain(ref_2)
+		expect(container.contains(ref_1)).toBeTruthy()
+		expect(container.contains(ref_2)).toBeFalsy()
 		expect(ref_1.style.opacity).toBe("1")
 		expect(ref_2.style.opacity).toBe("0")
 
 		// exit 1
 		await new Promise<void>(resolve => (resolve_last = resolve))
 
-		expect(rendered()).toContain(ref_2)
-		expect(rendered()).not.toContain(ref_1)
+		expect(container.contains(ref_2)).toBeTruthy()
+		expect(container.contains(ref_1)).toBeFalsy()
 		expect(ref_1.style.opacity).toBe("0")
 		expect(ref_2.style.opacity).toBe("0")
 
 		// enter 2
 		await new Promise<void>(resolve => (resolve_last = resolve))
 
-		expect(rendered()).toContain(ref_2)
-		expect(rendered()).not.toContain(ref_1)
+		expect(container.contains(ref_2)).toBeTruthy()
+		expect(container.contains(ref_1)).toBeFalsy()
 		expect(ref_1.style.opacity).toBe("0")
 		expect(ref_2.style.opacity).toBe("1")
 	})

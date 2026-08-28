@@ -1,40 +1,39 @@
-import {createRoot, createSignal, JSX, Show} from "solid-js"
+import {createRoot, createSignal, Show} from "solid-js"
+import type {JSX} from "@solidjs/web"
 import {screen, render} from "@solidjs/testing-library"
 import {Presence, VariantDefinition, motion} from "../src/index.jsx"
-
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-motion
 
 const duration = 0.001
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
 
-describe("motion directive", () => {
+describe("motion ref factory", () => {
 	test("Applies initial as style to DOM node", async () => {
 		await render(() => (
 			<div
 				data-testid="box"
-				use:motion={{
+				ref={motion(() => ({
 					initial: {opacity: 0.5, x: 100},
-				}}
+				}))}
 			/>
 		))
 		const component = await screen.findByTestId("box")
 		expect(component.style.opacity).toBe("0.5")
-		expect(component.style.getPropertyValue("--motion-translateX")).toBe("100px")
-		expect(component.style.transform).toBe("translateX(var(--motion-translateX))")
+		expect(component.style.transform).toBe("translateX(100px)")
 	})
 
 	test("Animation runs on mount if initial and animate differ", async () => {
 		let ref!: HTMLDivElement
 		render(() => (
 			<div
-				ref={ref}
-				use:motion={{
-					initial: {opacity: 0.4},
-					animate: {opacity: [0, 0.8]},
-					transition: {duration},
-				}}
+				ref={[
+					el => (ref = el as HTMLDivElement),
+					motion(() => ({
+						initial: {opacity: 0.4},
+						animate: {opacity: [0, 0.8]},
+						transition: {duration},
+					})),
+				]}
 			/>
 		))
 		await new Promise<void>(resolve => setTimeout(() => resolve(), 60))
@@ -46,11 +45,11 @@ describe("motion directive", () => {
 
 		const element = createRoot(() => (
 			<div
-				use:motion={{
+				ref={motion(() => ({
 					initial: {opacity: 0},
 					animate: {opacity: opacity()},
 					transition: {duration},
-				}}
+				}))}
 			/>
 		)) as HTMLDivElement
 
@@ -74,12 +73,14 @@ describe("motion directive", () => {
 			let ref!: HTMLDivElement
 			render(() => (
 				<div
-					ref={ref}
-					use:motion={{
-						initial: {opacity: 0.5},
-						animate: {opacity: 0.9},
-						transition: {duration: 10},
-					}}
+					ref={[
+						el => (ref = el as HTMLDivElement),
+						motion(() => ({
+							initial: {opacity: 0.5},
+							animate: {opacity: 0.9},
+							transition: {duration: 10},
+						})),
+					]}
 				/>
 			))
 			setTimeout(() => resolve(ref), 500)
@@ -101,10 +102,10 @@ describe("motion directive", () => {
 					<Show when={props.show ?? true}>
 						<div
 							data-testid="child"
-							use:motion={{
+							ref={motion(() => ({
 								animate: props.animate,
 								exit: props.exit,
-							}}
+							}))}
 						/>
 					</Show>
 				</Presence>
