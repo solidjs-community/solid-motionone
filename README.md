@@ -30,6 +30,7 @@ Motion for Solid is a small animation library for Solid 2.0. It takes advantage 
 - [Scroll-triggered animations](#scroll-triggered-animations)
 - [Event handlers](#event-handlers)
 - [Low-level primitives](#low-level-primitives)
+- [Scroll-linked animations](#scroll-linked-animations)
 - [TypeScript](#typescript)
 - [Examples](#examples)
 
@@ -334,6 +335,31 @@ import {createMotion} from "solid-motionone"
 
 createMotion(myElement, () => ({animate: {opacity: 1}}))
 ```
+
+## Scroll-linked animations
+
+While `inView` (see [Scroll-triggered animations](#scroll-triggered-animations)) animates *to* a target once an element crosses into view, `useScroll` instead gives you a continuously-updating scroll progress value to drive your own animations directly from — e.g. a progress bar, or a value passed into `animate`:
+
+```tsx
+import {useScroll} from "solid-motionone"
+
+function App() {
+  const {scrollY} = useScroll()
+
+  return (
+    <div style={{position: "fixed", top: 0, left: 0, height: "4px", background: "royalblue", "transform-origin": "0% 50%", transform: `scaleX(${scrollY().progress})`}} />
+  )
+}
+```
+
+`useScroll(options?)` returns:
+
+| Value | Type | Description |
+| --- | --- | --- |
+| `time` | `Accessor<number>` | The current scroll-tracking timestamp. |
+| `scrollX` / `scrollY` | `Accessor<{current, offset, progress, scrollLength, velocity, targetOffset, targetLength, containerLength}>` | Per-axis scroll info — `progress` (`0`–`1`) is the most commonly used field. |
+
+`options` accepts `container`/`target` (to track a scrollable element instead of the page), `axis`, and `offset` — see Motion's [`scroll` docs](https://motion.dev/docs/scroll) for the full set, which this passes straight through to.
 
 ## TypeScript
 

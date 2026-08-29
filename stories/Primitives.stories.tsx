@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from "storybook-solidjs-vite"
 import {createSignal} from "solid-js"
-import {motion} from "../src/index.jsx"
+import {motion, useScroll} from "../src/index.jsx"
 
 const meta = {
 	title: "Motion/Primitives",
@@ -58,6 +58,31 @@ export const ReactiveRefFactory: Story = {
 						background: "seagreen",
 					}}
 				/>
+			</div>
+		)
+	},
+}
+
+/**
+ * `useScroll` exposes reactive page-scroll progress (0–1) for driving
+ * scroll-linked animations — scroll the story's canvas to see the bar fill.
+ */
+export const ScrollProgress: Story = {
+	render: () => {
+		const {scrollY} = useScroll()
+		return (
+			<div>
+				<div
+					style={{
+						position: "sticky",
+						top: "0px",
+						height: "8px",
+						background: "royalblue",
+						"transform-origin": "0% 50%",
+						transform: `scaleX(${scrollY().progress})`,
+					}}
+				/>
+				<div style={{height: "2000px", padding: "16px"}}>Scroll down to progress the bar above.</div>
 			</div>
 		)
 	},
