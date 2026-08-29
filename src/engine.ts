@@ -80,17 +80,32 @@ function dispatch(el: Element, type: string, detail: Record<string, unknown>): v
 	el.dispatchEvent(new CustomEvent(type, {detail}))
 }
 
+interface MountContext {
+	element: Element
+	cancelAnimation?: () => void
+	unbindGestures?: () => void
+}
+
 /** @internal */
 export function createMotionState(
 	initialOptions: Options,
 	parent?: MotionState,
 ): MotionState {
 	let options = initialOptions
-	let element: Element | undefined
 	let currentTransition: AnimationOptions | undefined
 	const active = {hover: false, press: false, exit: false}
-	let unbindGestures: (() => void) | undefined
-	let cancelCurrentAnimation: (() => void) | undefined
+
+	/*
+	Scoped to whichever mount() call is currently active. A sibling Motion
+	component can get constructed — and briefly mounted/unmounted again —
+	before its real mount, as a structural side effect of how <Show>/
+	createSwitchTransition read reactive sources (see primitives.ts's
+	mount-gating effect). That stale cycle's own cleanup must never reach
+	into a *newer* mount's in-flight animation or gesture bindings and
+	cancel them; keeping this per-mount-context, and only ever pointing
+	`current` at the latest one, keeps the two cycles from interfering.
+	*/
+	let current: MountContext | undefined
 
 	function getInitialVariantKey(): string | undefined {
 		if (typeof options.initial === "string") return options.initial
@@ -117,18 +132,20 @@ export function createMotionState(
 	}
 
 	function animateToTarget(target: Target): Promise<void> {
-		cancelCurrentAnimation?.()
-		if (!element) return Promise.resolve()
+		const ctx = current
+		ctx?.cancelAnimation?.()
+		if (!ctx) return Promise.resolve()
 		const values = targetValues(target)
 		if (Object.keys(values).length === 0) return Promise.resolve()
 
 		const transition = normalizeTransition({...currentTransition, ...target.transition})
-		dispatch(element, "motionstart", {target})
-		const controls = animate(element, values as any, transition as any)
-		cancelCurrentAnimation = () => controls.stop()
+		dispatch(ctx.element, "motionstart", {target})
+		const controls = animate(ctx.element, values as any, transition as any)
+		ctx.cancelAnimation = () => controls.stop()
 		return controls.finished.then(
 			() => {
-				if (element) dispatch(element, "motioncomplete", {target})
+				// don't dispatch on behalf of a mount cycle a newer one has superseded
+				if (current === ctx) dispatch(ctx.element, "motioncomplete", {target})
 			},
 			// swallow: `finished` rejects when an in-flight animation is cancelled/replaced
 			() => undefined,
@@ -189,7 +206,8 @@ export function createMotionState(
 
 	const state: MotionState = {
 		mount(el: Element) {
-			element = el
+			const ctx: MountContext = {element: el}
+			current = ctx
 			currentTransition = normalizeTransition(options.transition)
 
 			const startTarget = getStartTarget()
@@ -200,22 +218,35 @@ export function createMotionState(
 				void animateToTarget(animateTarget)
 			}
 
-			unbindGestures = bindGestures(el)
+			ctx.unbindGestures = bindGestures(el)
 			mountedStates.set(el, state)
 
 			return () => {
-				cancelCurrentAnimation?.()
-				unbindGestures?.()
-				if (element) mountedStates.delete(element)
-				element = undefined
+				ctx.cancelAnimation?.()
+				ctx.unbindGestures?.()
+				mountedStates.delete(el)
+				if (current === ctx) current = undefined
 			}
 		},
 		update(newOptions: Options) {
-			const prevAnimate = JSON.stringify(resolveTarget(options.animate, options.variants) ?? {})
+			const prevOptions = options
+			const prevAnimate = JSON.stringify(resolveTarget(prevOptions.animate, prevOptions.variants) ?? {})
 			options = newOptions
 			currentTransition = normalizeTransition(options.transition)
-			unbindGestures?.()
-			if (element) unbindGestures = bindGestures(element)
+
+			// only tear down and recreate gesture listeners when a gesture-related
+			// prop actually changed — not on every unrelated reactive update (e.g.
+			// a reactive `animate` value), which would cut off an in-progress
+			// hover/press/inView interaction for no reason
+			const gesturesChanged =
+				prevOptions.hover !== options.hover ||
+				prevOptions.press !== options.press ||
+				prevOptions.inView !== options.inView ||
+				prevOptions.inViewOptions !== options.inViewOptions
+			if (gesturesChanged && current) {
+				current.unbindGestures?.()
+				current.unbindGestures = bindGestures(current.element)
+			}
 
 			const nextAnimate = resolveTarget(options.animate, options.variants) ?? {}
 			if (!active.exit && prevAnimate !== JSON.stringify(nextAnimate)) {

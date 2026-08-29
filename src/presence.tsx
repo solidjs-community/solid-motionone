@@ -34,7 +34,13 @@ export const Presence: FlowComponent<{
 	initial?: boolean
 	exitBeforeEnter?: boolean
 }> = props => {
-	const [mount, setMount] = createSignal(true),
+	/*
+	onEnter/onExit below are invoked synchronously from inside
+	createSwitchTransition's own createRenderEffect — an owned reactive
+	scope — so this internal signal needs ownedWrite to allow writing to it
+	from there without Solid 2.0 throwing REACTIVE_WRITE_IN_OWNED_SCOPE.
+	*/
+	const [mount, setMount] = createSignal(true, {ownedWrite: true}),
 		state = {initial: props.initial ?? true, mount},
 		render = (
 			<PresenceContext value={state}>

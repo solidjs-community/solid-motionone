@@ -16,7 +16,7 @@ Motion for Solid is a small animation library for SolidJS. It takes advantage of
 
 ## Installation
 
-Motion One for Solid can be installed via npm:
+Solid Motion can be installed via npm. It requires `solid-js@^2.0.0-rc.0` (Solid 2.0 is currently in beta/RC).
 
 ```bash
 npm install solid-motionone
@@ -162,4 +162,13 @@ function App() {
     />
   </Show>
 </Presence>
+```
+
+## Examples
+
+Every feature documented above (plus gestures, `inView`, variants, and more) has a live, interactive example in this repo's Storybook. Run it locally with:
+
+```bash
+pnpm install
+pnpm run storybook
 ```
