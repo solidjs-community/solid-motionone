@@ -28,19 +28,34 @@ function resolveTarget(
 }
 
 /*
-Motion One used `easing`; modern Motion renamed it to `ease`. Translated here
-so solid-motionone's existing, documented `transition={{easing: "..."}}` API
-keeps working unchanged.
+Two compatibility shims for the documented `transition={{duration, key: {...}}}`
+per-value override syntax:
+
+1. Motion One used `easing`; modern Motion renamed it to `ease`.
+2. Motion One's per-value override only needed to specify what differs from
+   the base transition (the rest was inherited). Modern Motion's own
+   `resolveTransition` only merges a per-value override with its parent when
+   the override explicitly sets `inherit: true` — otherwise the override is
+   used standalone and silently falls back to Motion's own defaults for
+   anything it didn't specify (e.g. `x: {offset: [...]}` with no `duration`
+   of its own completes almost instantly instead of over the base duration).
+   Merging here keeps the documented, more ergonomic behavior working.
 */
 function normalizeTransition(transition: unknown): AnimationOptions | undefined {
 	if (!transition || typeof transition !== "object") return transition as AnimationOptions | undefined
-	const result: Record<string, unknown> = {}
+
+	const base: Record<string, unknown> = {}
+	const perValue: Record<string, Record<string, unknown>> = {}
 	for (const [key, value] of Object.entries(transition)) {
-		const normalizedKey = key === "easing" ? "ease" : key
-		result[normalizedKey] =
-			value && typeof value === "object" && !Array.isArray(value)
-				? normalizeTransition(value)
-				: value
+		if (value && typeof value === "object" && !Array.isArray(value)) perValue[key] = value
+		else base[key === "easing" ? "ease" : key] = value
+	}
+
+	const result: Record<string, unknown> = {...base}
+	for (const [key, override] of Object.entries(perValue)) {
+		const normalizedOverride = {...base}
+		for (const [k, v] of Object.entries(override)) normalizedOverride[k === "easing" ? "ease" : k] = v
+		result[key] = normalizedOverride
 	}
 	return result as AnimationOptions
 }
@@ -92,7 +107,6 @@ export function createMotionState(
 	parent?: MotionState,
 ): MotionState {
 	let options = initialOptions
-	let currentTransition: AnimationOptions | undefined
 	const active = {hover: false, press: false, exit: false}
 
 	/*
@@ -114,13 +128,23 @@ export function createMotionState(
 	}
 
 	function getStartTarget(): Target {
-		const animateTarget = resolveTarget(options.animate, options.variants) ?? {}
-		if (options.initial === false) return animateTarget
-		if (options.initial === undefined) {
-			const inheritedKey = getInitialVariantKey()
-			return (inheritedKey && options.variants?.[inheritedKey]) || animateTarget
+		if (options.initial === false) {
+			return resolveTarget(options.animate, options.variants) ?? {}
 		}
-		return resolveTarget(options.initial, options.variants) ?? animateTarget
+		if (options.initial === undefined) {
+			/*
+			No explicit `initial` and nothing inherited from a parent's variant
+			key: leave the starting style empty (browser defaults) rather than
+			falling back to the `animate` target. Falling back to `animate` here
+			made mount()'s "does the start differ from the target" check always
+			see them as equal, silently skipping the enter animation entirely —
+			breaking the documented default behavior ("elements automatically
+			animate to the values defined in animate when they're created").
+			*/
+			const inheritedKey = getInitialVariantKey()
+			return (inheritedKey && options.variants?.[inheritedKey]) || {}
+		}
+		return resolveTarget(options.initial, options.variants) ?? {}
 	}
 
 	function computeEffectiveTarget(): Target {
@@ -138,7 +162,10 @@ export function createMotionState(
 		const values = targetValues(target)
 		if (Object.keys(values).length === 0) return Promise.resolve()
 
-		const transition = normalizeTransition({...currentTransition, ...target.transition})
+		// merge, then normalize once — normalizing an already-normalized base
+		// transition again would re-merge its own per-value overrides against a
+		// *new* base and let stale, already-baked-in override values win
+		const transition = normalizeTransition({...options.transition, ...target.transition})
 		dispatch(ctx.element, "motionstart", {target})
 		const controls = animate(ctx.element, values as any, transition as any)
 		ctx.cancelAnimation = () => controls.stop()
@@ -208,7 +235,6 @@ export function createMotionState(
 		mount(el: Element) {
 			const ctx: MountContext = {element: el}
 			current = ctx
-			currentTransition = normalizeTransition(options.transition)
 
 			const startTarget = getStartTarget()
 			applyStylesDirect(el, startTarget)
@@ -232,7 +258,6 @@ export function createMotionState(
 			const prevOptions = options
 			const prevAnimate = JSON.stringify(resolveTarget(prevOptions.animate, prevOptions.variants) ?? {})
 			options = newOptions
-			currentTransition = normalizeTransition(options.transition)
 
 			// only tear down and recreate gesture listeners when a gesture-related
 			// prop actually changed — not on every unrelated reactive update (e.g.

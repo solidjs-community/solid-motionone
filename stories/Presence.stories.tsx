@@ -20,7 +20,8 @@ const box = {
  * Basic enter/exit: removing the element from a `<Show>` inside `<Presence>`
  * animates it out via `exit` before it actually leaves the DOM (rather than
  * disappearing instantly). The play function drives the toggle and proves
- * the element is still present mid-exit, then gone once the animation ends.
+ * the element is still present mid-exit, then gone once the animation ends —
+ * then toggles back on so the story doesn't land on an empty canvas.
  */
 export const BasicEnterExit: Story = {
 	render: () => {
@@ -48,6 +49,7 @@ export const BasicEnterExit: Story = {
 	play: async ({canvasElement}) => {
 		const canvas = within(canvasElement)
 		await waitFor(() => expect(canvas.getByTestId("box")).toBeInTheDocument())
+
 		await userEvent.click(canvas.getByTestId("toggle"))
 		// still present immediately after toggling off — exit animation hasn't finished
 		expect(canvas.getByTestId("box")).toBeInTheDocument()
@@ -55,6 +57,9 @@ export const BasicEnterExit: Story = {
 		await waitFor(() => expect(canvas.queryByTestId("box")).not.toBeInTheDocument(), {
 			timeout: 3000,
 		})
+
+		await userEvent.click(canvas.getByTestId("toggle"))
+		await waitFor(() => expect(canvas.getByTestId("box")).toBeInTheDocument())
 	},
 }
 
@@ -143,7 +148,7 @@ export const ExitBeforeEnter: Story = {
 export const NestedExit: Story = {
 	render: () => {
 		const [show, setShow] = createSignal(true)
-		const exit = {opacity: 0, transition: {duration: 0.001}}
+		const exit = {opacity: 0, transition: {duration: 0.5}}
 		return (
 			<div>
 				<button data-testid="toggle" onClick={() => setShow(s => !s)}>
@@ -163,11 +168,21 @@ export const NestedExit: Story = {
 			</div>
 		)
 	},
+	// round-trips back to the visible state so the story doesn't land on an
+	// empty canvas after the automated demonstration finishes — a 0.001s
+	// duration (fast enough for jsdom-based unit tests) also finishes far too
+	// quickly to actually see, so this uses a human-visible 0.5s instead.
 	play: async ({canvasElement}) => {
 		const canvas = within(canvasElement)
 		await waitFor(() => expect(canvas.getByTestId("parent")).toBeInTheDocument())
+
 		await userEvent.click(canvas.getByTestId("toggle"))
-		await waitFor(() => expect(canvas.queryByTestId("parent")).not.toBeInTheDocument())
+		await waitFor(() => expect(canvas.queryByTestId("parent")).not.toBeInTheDocument(), {
+			timeout: 2000,
+		})
+
+		await userEvent.click(canvas.getByTestId("toggle"))
+		await waitFor(() => expect(canvas.getByTestId("parent")).toBeInTheDocument())
 	},
 }
 
