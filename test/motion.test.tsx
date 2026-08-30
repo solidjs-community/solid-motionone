@@ -1,4 +1,5 @@
-import {JSX, createRoot, createSignal} from "solid-js"
+import {createRoot, createSignal} from "solid-js"
+import type {JSX} from "@solidjs/web"
 import {screen, render, fireEvent} from "@solidjs/testing-library"
 import {Motion} from "../src/index.jsx"
 
@@ -35,8 +36,7 @@ describe("Motion", () => {
 		await render(() => <Motion.div data-testid="box" initial={{opacity: 0.5, x: 100}} />)
 		const component = await screen.findByTestId("box")
 		expect(component.style.opacity).toBe("0.5")
-		expect(component.style.getPropertyValue("--motion-translateX")).toBe("100px")
-		expect(component.style.transform).toBe("translateX(var(--motion-translateX))")
+		expect(component.style.transform).toBe("translateX(100px)")
 	})
 
 	test("Animation runs on mount if initial and animate differ", async () => {
